@@ -38,8 +38,9 @@ Used an AI assistant to:
 ## Installation
 - Clone repo  
 - Navigate to backend:
-    - ```bash
-    cd backend
+```bash
+cd backend
+
 - npm install
 
 ## Testing
