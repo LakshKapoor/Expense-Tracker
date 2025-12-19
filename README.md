@@ -12,9 +12,10 @@ development (TDD)
 ## Tech Stack
 - Backend: Node.js, Express
 - Database: Planned (PostgreSQL / SQLite)
-- Testing: Jest (planned)
+- Testing: Jest, Supertest (planned)
 - Authentication: JWT (planned)
 - Frontend: React (planned)
+
 
 ## Features (Planned)
 - User registration and login
@@ -33,3 +34,22 @@ Used an AI assistant to:
 - Plan the backend architecture
 - Generate initial boilerplate code
 - Plan development steps
+
+## Installation
+- Clone repo  
+- Navigate to backend:
+    - ```bash
+    - cd backend
+- npm install
+
+## Testing
+- Run `npx jest` to run all tests
+- Tests include:
+  - Registration failure & success
+  - Login failure & success
+  - Sweets API returning array
+
+Steps followed: RED → GREEN → REFACTOR
+
+## Start Server
+- node index.js

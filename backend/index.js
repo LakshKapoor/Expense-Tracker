@@ -58,5 +58,5 @@ app.get("/api/sweets", (req, res) => {
     ];
   
     return res.status(200).json(sweets);
-  });
+  })
   
