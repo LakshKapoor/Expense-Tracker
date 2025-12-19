@@ -38,9 +38,10 @@ Used an AI assistant to:
 ## Installation
 - Clone repo  
 - Navigate to backend:
-    - ```bash
-    - cd backend
-- npm install
+```bash
+cd backend
+npm install
+```
 
 ## Testing
 - Run `npx jest` to run all tests
@@ -52,4 +53,7 @@ Used an AI assistant to:
 Steps followed: RED → GREEN → REFACTOR
 
 ## Start Server
-- node index.js
+- Start the server
+```bash
+node index.js
+```
