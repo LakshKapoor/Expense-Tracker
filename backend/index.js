@@ -39,3 +39,19 @@ app.post("/api/auth/login", (req, res)=>{
 
 });
 
+app.post("/api/expenses",(req, res)=>{
+    const {title, amount, category} = req.body;
+
+    if(!title || !amount || amount<=0){
+        return res.status(400).json({message: "Invalid expense data"})
+    }
+
+    return res.status(201).json({
+        message: "Expense added (mock)",
+        expense:{
+            title,
+            amount,
+            category
+        }
+    });
+});

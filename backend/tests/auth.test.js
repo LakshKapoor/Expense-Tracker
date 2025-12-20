@@ -14,8 +14,7 @@ describe("User Registration", () => {
         });
     
          expect(res.status).toBe(201);
-    
-        expect(res.body.message).toBe("User registered successfully (mock)");
+            expect(res.body.message).toBe("User registered successfully (mock)");
     });
 });
 
