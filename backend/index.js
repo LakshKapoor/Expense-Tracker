@@ -60,6 +60,7 @@ app.post("/api/expenses",async (req, res)=>{
         });
 
     } catch (error) {
+        console.error(error)
         return res.status(500).json({
             message: "Failed to add expense"
         })
@@ -68,21 +69,15 @@ app.post("/api/expenses",async (req, res)=>{
     
 });
 
-app.get("/api/expenses",(req, res)=>{
-    const expenses = [
-        {
-            title: "lunch",
-            amount: 200,
-            category: "food"
-        },
-        {
-            title: "Bus",
-            amount: 50,
-            category: "Travel"
-          }
-        ];
-    
-        return res.status(200).json(expenses);
+app.get("/api/expenses",async (req, res)=>{
+    try {
+        const expenses = await Expense.find()
+        return res.status(200).json(expenses)
+    } catch (error) {
+        return res.status(500).json({
+            message: "Failed to fetch expenses"
+          })
+    }
 });
 
 connectDB();
