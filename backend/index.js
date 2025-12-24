@@ -80,4 +80,60 @@ app.get("/api/expenses",async (req, res)=>{
     }
 });
 
+app.put("/api/expenses/:id", async (req, res) =>{
+    const { id } =  req.params;
+    const {title, amount, category} = req.body;
+
+    if(!title || !amount || amount<=0){
+        return res.status(400).json({message:"Invalid Expense Data"})
+    }
+
+    try {
+        const updatedExpense = await Expense.findByIdAndUpdate(
+            id,
+            {title, amount, category},
+            {new: true}
+        );
+
+        if(!updatedExpense){
+            return res.status(404).json({message:"Expense not found"})
+        }
+
+        return res.status(200).json({
+            message:"Expense updated",
+            expense: updatedExpense
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message:"failed to update expense"
+        })
+    }
+    
+});
+
+app.delete("/api/expenses/:id", async (req, res)=>{
+    const {id} = req.params
+    
+    try {
+        const deletedExpense = await Expense.findByIdAndDelete(id)
+
+        if(!deletedExpense){
+            return res.status(404).json({message:"Expense not found"})
+        }
+
+        return res.status(200).json({message:"Expense deleted"})
+    } catch (error) {
+        return res.status(500).json({
+            message:"failed to delete expense"
+        });
+        
+    }
+})
+
+
+
+
+
+
+
 connectDB();
