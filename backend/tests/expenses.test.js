@@ -19,7 +19,7 @@ describe("Expense API", ()=>{
         });
 
         expect(res.status).toBe(201);
-        expect(res.body.message).toBe("Expense added (mock)")
+        expect(res.body.message).toBe("Expense added")
     });
 
     it("should return the expenses list", async ()=>{

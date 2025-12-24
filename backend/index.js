@@ -1,5 +1,6 @@
 const express = require("express");
 const connectDB = require("./config/db")
+const Expense = require("./models/expense")
 
 const app = express();
 app.use(express.json());
@@ -40,21 +41,31 @@ app.post("/api/auth/login", (req, res)=>{
 
 });
 
-app.post("/api/expenses",(req, res)=>{
+app.post("/api/expenses",async (req, res)=>{
     const {title, amount, category} = req.body;
 
     if(!title || !amount || amount<=0){
         return res.status(400).json({message: "Invalid expense data"})
     }
 
-    return res.status(201).json({
-        message: "Expense added (mock)",
-        expense:{
+    try {
+        const expense = await Expense.create({
             title,
             amount,
             category
-        }
-    });
+        })
+        return res.status(201).json({
+            message: "Expense added",
+            expense
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: "Failed to add expense"
+        })
+    }
+
+    
 });
 
 app.get("/api/expenses",(req, res)=>{
