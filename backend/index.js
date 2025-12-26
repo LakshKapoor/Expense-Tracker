@@ -1,9 +1,13 @@
 const express = require("express");
 const connectDB = require("./config/db")
 const Expense = require("./models/expense")
+const cors = require("cors")
 
 const app = express();
 app.use(express.json());
+
+app.use(cors())
+
 
 app.get("/health", (req, res) => {
     res.json({status: "ok"});
