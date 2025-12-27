@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useStyleRegistry } from "styled-jsx";
+
 
 /* API URL CONSTANT (HERE) */
 const APIurl = "http://172.25.9.156:3000";
@@ -12,6 +12,7 @@ export default function Page() {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
+  const [editingID, setEditingID] = useState("");
 
   //fetch expenses
   const fetchExpenses=() => {
@@ -29,8 +30,14 @@ export default function Page() {
 //handle form submit
 const handleSubmit = (e) =>{
   e.preventDefault()
-  fetch(`${APIurl}/api/expenses`,{
-    method: "POST",
+
+  const method = editingID ? "PUT":"POST"
+  const url = editingID 
+  ? `${APIurl}/api/expenses/${editingID}` 
+  : `${APIurl}/api/expenses`
+
+  fetch(url,{
+    method,
     headers:{
       "Content-Type": "application/json",
     },
@@ -44,10 +51,30 @@ const handleSubmit = (e) =>{
     setTitle("")
     setAmount("")
     setCategory("")
+    setEditingID(null)
     fetchExpenses()
   })
   .catch((err)=>console.log(err))
 };
+
+
+//handle Delete operation
+const handleDelete = (id) =>{
+  fetch(`${APIurl}/api/expenses/${id}`,{
+    method: "DELETE",
+  })
+  .then(() => fetchExpenses())
+  .catch((err)=>console.log(err))
+}
+
+//handle Edit/Update operation
+const handleEdit = (expense) =>{
+  setTitle(expense.title)
+  setAmount(expense.amount)
+  setCategory(expense.category)
+  setEditingID(expense._id)
+}
+
 
   return (
     <main style={{ padding: "20px" }}>
@@ -79,7 +106,9 @@ const handleSubmit = (e) =>{
 
           <br />
 
-          <button type="submit">Add Expense</button>
+          <button type="submit">
+            {editingID ? "Update Expense":"Add Expense"}
+            </button>
       </form>
 
 
@@ -90,7 +119,25 @@ const handleSubmit = (e) =>{
       <ul>
         {expenses.map((expense) => (
           <li key={expense._id}>
-            {expense.title} — ₹{expense.amount}
+            {expense.title} — ₹{expense.amount} — {expense.category}
+
+            
+            <button
+            style = {{margin: "10px"}}
+            onClick ={()=>handleDelete(expense._id)} 
+            >
+              Delete
+            </button>
+
+            
+
+            <button 
+            style={{margin: "10px"}}
+            onClick={()=>handleEdit(expense)}
+            >
+              Edit
+            </button>
+            
           </li>
         ))}
       </ul>
