@@ -2,6 +2,7 @@ const express = require("express");
 const connectDB = require("./config/db")
 const Expense = require("./models/expense")
 const cors = require("cors")
+const calculateBalances = require("./utils/calculateBalances")
 
 const app = express();
 app.use(express.json());
@@ -46,17 +47,31 @@ app.post("/api/auth/login", (req, res)=>{
 });
 
 app.post("/api/expenses",async (req, res)=>{
-    const {title, amount, category} = req.body;
+    const {description, amount, groupId,paidBy, splitBetween} = req.body;
 
-    if(!title || !amount || amount<=0){
+    if(!description ||
+        !amount ||
+        !groupId ||
+        !paidBy ||
+        splitBetween===0){
         return res.status(400).json({message: "Invalid expense data"})
     }
 
+    const shareAmount = amount/splitBetween.length;
+
+    const splits = splitBetween.map((userId)=>({
+        userId,
+        share: shareAmount,
+        status: userId == paidBy ? "CONFIRMED" : "UNPAID",
+    }))
+
     try {
         const expense = await Expense.create({
-            title,
-            amount,
-            category
+            description, 
+            amount, 
+            groupId,
+            paidBy, 
+            splits,
         })
         return res.status(201).json({
             message: "Expense added",
@@ -134,7 +149,60 @@ app.delete("/api/expenses/:id", async (req, res)=>{
     }
 })
 
+app.get("/api/groups/:groupId/balances" , async (req, res) =>{
 
+    const groupId = req.params
+
+    try{
+        const expenses = await Expense.find({groupId})
+
+        const balances = calculateBalances(expenses)
+
+        return res.status(200).json(balances)
+    }
+    catch(err){
+        console.error(error)
+        return res.status(500).json({ message:"Failed to calculate balances"})
+    }
+})
+
+app.post("/api/expenses/:expenseId/confirm", async (req,res)=>{
+    const {expenseId} = req.params
+    const {userId} = req.body
+
+    try {
+        const expense = await Expense.findById(expenseId)
+        if(!expense){
+            return res.status(404).json({message:"Expense not found"})
+        }
+
+        if(expense.paidBy.toString()!=userId){
+            return res.status(403).json({message:"Not authorized to confirm payment"})
+        }
+
+        const split = expense.splits.find(
+            (s)=>s.userId.toString() == userId
+        )
+
+        if(!split){
+            return res.status(404).json({message:"Split not found"})
+        }
+
+        split.status = "CONFIRMED"
+
+        await expense.save()
+
+        return res.status(200).json({
+            message :"Payment Confirmed",
+            expense
+        })
+
+        
+    } catch (error) {
+        console.error(error)
+        return res.status(503).json({message:"Failed to confirm payment"})
+    }
+})
 
 
 

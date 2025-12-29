@@ -1,7 +1,24 @@
 const mongoose = require("mongoose");
 
+const splitSchema = new mongoose.Schema({
+    userId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    share:{
+        type: number,
+        required: true
+    },
+    status:{
+        type: String,
+        ref: ["PAID","UNPAID","CONFIRMED"],
+        required: true
+    },
+})
+
 const expenseSchema = new mongoose.Schema({
-    title:{
+    description:{
         type:String,
         required: true
     },
@@ -10,8 +27,18 @@ const expenseSchema = new mongoose.Schema({
         type: Number,
         required:true
     },
-    category:{
-        type:String,
+    groupId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Group",
+        required: true
+    },
+    paidBy:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    splits:{
+        type: [splitSchema],
         required: true
     },
 
