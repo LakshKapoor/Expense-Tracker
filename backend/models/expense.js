@@ -2,23 +2,26 @@ const mongoose = require("mongoose");
 
 const splitSchema = new mongoose.Schema({
     userId:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        // type: mongoose.Schema.Types.ObjectId,
+        // ref: "User",
+        // required: true
+        type: String,
         required: true
     },
     share:{
-        type: number,
+        type: Number,
         required: true
     },
     status:{
         type: String,
-        ref: ["PAID","UNPAID","CONFIRMED"],
+        enum: ["PAID","UNPAID","CONFIRMED"],
+        default: "UNPAID",
         required: true
     },
 })
 
 const expenseSchema = new mongoose.Schema({
-    description:{
+    title:{
         type:String,
         required: true
     },
@@ -33,9 +36,12 @@ const expenseSchema = new mongoose.Schema({
         required: true
     },
     paidBy:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        // type: mongoose.Schema.Types.ObjectId,
+        // ref: "User",
+        // required: true
+        type: String,
         required: true
+
     },
     splits:{
         type: [splitSchema],
@@ -49,5 +55,6 @@ const expenseSchema = new mongoose.Schema({
 });
 
 const Expense = mongoose.model("Expense", expenseSchema);
+
 
 module.exports = Expense;

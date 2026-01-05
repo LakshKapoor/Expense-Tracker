@@ -3,12 +3,18 @@ const connectDB = require("./config/db")
 const Expense = require("./models/expense")
 const cors = require("cors")
 const calculateBalances = require("./utils/calculateBalances")
+const Group = require("./models/group")
 
 const app = express();
 app.use(express.json());
 
 app.use(cors())
 
+// app.get("/ping", (req, res)=>{
+//     res.send("backend alive")
+// })
+
+connectDB();
 
 app.get("/health", (req, res) => {
     res.json({status: "ok"});
@@ -149,9 +155,27 @@ app.delete("/api/expenses/:id", async (req, res)=>{
     }
 })
 
+app.post("/api/groups", async (req, res) =>{
+    const {name, members} = req.body;
+    if(!name || !members || members.length < 2){
+        return res.status(400).json({message:"Invalid group data"})
+    }
+    
+    try {
+        const group = await Group.create({
+            name, members
+        })
+        return res.status(201).json({message:"Group created", group})
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({message:"Failed to create group"})
+    }
+
+})
+
 app.get("/api/groups/:groupId/balances" , async (req, res) =>{
 
-    const groupId = req.params
+    const {groupId} = req.params
 
     try{
         const expenses = await Expense.find({groupId})
@@ -160,7 +184,7 @@ app.get("/api/groups/:groupId/balances" , async (req, res) =>{
 
         return res.status(200).json(balances)
     }
-    catch(err){
+    catch(error){
         console.error(error)
         return res.status(500).json({ message:"Failed to calculate balances"})
     }
@@ -181,7 +205,7 @@ app.post("/api/expenses/:expenseId/confirm", async (req,res)=>{
         }
 
         const split = expense.splits.find(
-            (s)=>s.userId.toString() == userId
+            (s)=>s.status === "PAID"
         )
 
         if(!split){
@@ -204,12 +228,12 @@ app.post("/api/expenses/:expenseId/confirm", async (req,res)=>{
     }
 })
 
-app.post("/api/expenses/:expensesId/pay",async (req,res)=>{
+app.post("/api/expenses/:expenseId/pay",async (req,res)=>{
     const {expenseId}= req.params
     const {userId}= req.body
 
     try {
-        const expense = await Expense.findById.(expenseId)
+        const expense = await Expense.findById(expenseId)
 
         if(!expense){
             return res.status(404).json({message:"Expense not found"})
@@ -231,7 +255,7 @@ app.post("/api/expenses/:expensesId/pay",async (req,res)=>{
 
         await expense.save()
 
-        return  res.status(404).json({
+        return  res.status(200).json({
             message:"Payment marked as paid",
             expense
         })
@@ -245,4 +269,3 @@ app.post("/api/expenses/:expensesId/pay",async (req,res)=>{
 
 
 
-connectDB();

@@ -20,7 +20,7 @@ const calculateBalances = (expenses) =>{
 
         balances[userId]-=share
 
-        balances[paidBy]+=amount-share
+        balances[paidBy]+=share
     }
 }
 
