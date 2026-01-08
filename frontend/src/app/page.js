@@ -4,15 +4,20 @@ import { useEffect, useState } from "react";
 
 
 /* API URL CONSTANT (HERE) */
-const APIurl = "http://172.25.8.31:3000";
+const APIurl = "http://172.20.10.3:3000";
 
 export default function Page() {
+
+  const users=["u1", "u2", "u3"]
+
+  const [currentUserId, setCurrentUserId] = useState("user1")
   const [expenses, setExpenses] = useState([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [editingID, setEditingID] = useState("");
   const [groups, setGroups] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [balances, setbalances] = useState(null);
+  
 
 
   //fetch expenses
@@ -31,28 +36,42 @@ export default function Page() {
  
   //runs once page reloads
   useEffect(()=>{
-    if(selectedGroup){
-      fetchExpenses(selectedGroup)
+    if(selectedGroupId){
+      fetchExpenses(selectedGroupId)
+      fetchbalances(selectedGroupId)
     }
-  },[selectedGroup]);
+    else{
+      setExpenses([])
+      setbalances(null)
+    }
+  },[selectedGroupId]);
+
+  const fetchbalances = (groupId)=>{
+    fetch(`${APIurl}/api/groups/${groupId}/balances` )
+    .then((res)=>res.json())
+    .then((data) => setbalances(data))
+    .catch((err) => console.error(err));
+  }
+
+
 
 //handle form submit
 const handleSubmit = (e) =>{
   e.preventDefault()
 
-  const method = editingID ? "PUT":"POST"
-  const url = editingID 
-  ? `${APIurl}/api/expenses/${editingID}` 
-  : `${APIurl}/api/expenses`
+  
+  const url =`${APIurl}/api/expenses`
 
   fetch(url,{
-    method,
+    method:"POST",
     headers:{
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       title,
       amount: Number(amount),
+      groupId: selectedGroupId,
+      paidBy: currentUserId,
       
     }),
   })
@@ -76,16 +95,9 @@ const handleDelete = (id) =>{
   .catch((err)=>console.log(err))
 }
 
-//handle Edit/Update operation
-const handleEdit = (expense) =>{
-  setTitle(expense.title)
-  setAmount(expense.amount)
-  
-  setEditingID(expense._id)
-}
 
  //user sends i paid 
- const currentUserId = "user1"
+ 
  const markAsPaid =  async(expenseId) => {
    await fetch(`${APIurl}/api/expenses/${expenseId}/pay`,{
      method:"POST",
@@ -133,6 +145,23 @@ const handleEdit = (expense) =>{
     <main style={{ padding: "20px" }}>
       <h1>Expense Tracker</h1>
 
+      <div style = {{marginBottom: "20px"}}>
+      <label>
+        Current User:{" "}
+        <select
+        value ={currentUserId}
+        onChange={(e)=>setCurrentUserId(e.target.value)}
+        >
+          {users.map((user)=>(
+            <option key={user} value = {user} style={{color:"black"}}>
+              {user}
+            </option>
+          ))}
+
+        </select>
+      </label>
+      </div>
+
       <form onSubmit ={handleSubmit}>
         <input
           placeholder="Title"
@@ -151,12 +180,13 @@ const handleEdit = (expense) =>{
 
         <br />
 
-      
-          
-
-          <button type="submit">
-            {editingID ? "Update Expense":"Add Expense"}
+          <button type="submit" disabled={!selectedGroupId}>
+            {"Add Expense"}
             </button>
+
+            {!selectedGroupId && (
+              <p style={{color: "red"}}>Please select a group first</p>
+            )}
             
             {/*show buttons conditionally of confirmation*/}
 
@@ -171,7 +201,7 @@ const handleEdit = (expense) =>{
     <ul>
     {groups.map((group)=>(
       <li key={group._id}>
-        <button onClick={()=>{setSelectedGroup(group._id),
+        <button onClick={()=>{setSelectedGroupId(group._id),
           fetchExpenses(group._id)
         } }
         style={{margin: "10px"}}>
@@ -180,9 +210,9 @@ const handleEdit = (expense) =>{
       </li>
     ))}
     </ul>
-    {selectedGroup && (
+    {selectedGroupId && (
       <p style={{color: "green"}}>
-        Showing expenses for group: {selectedGroup.name}
+        Showing expenses for group: {selectedGroupId.name}
       </p>
     )}
 
@@ -222,7 +252,28 @@ const handleEdit = (expense) =>{
             </div>
           ))}
 
-      <ul>
+          <h2>Balances</h2>
+          {!balances &&<p>No balances to show</p>}
+          {
+            balances && (
+              <ul>
+                {Object.entries(balances).map(([userId,amount])=>
+                <li key = {userId}>
+                  {userId}{" "}
+                  {amount>0 
+                  ?`will recieve ${amount}`
+                  :amount<0
+                  ?`owes ${Math.abs(amount)}`
+                  :"is settled"
+                  }
+
+                </li>
+                )}
+              </ul>
+            )
+          }
+
+      {/* <ul>
 
         {expenses.map((expense) => (
           <li key={expense._id}>
@@ -243,11 +294,12 @@ const handleEdit = (expense) =>{
               Edit
             </button>
             
+
           </li>
 
           
         ))}
-      </ul>
+      </ul> */}
 
 
 

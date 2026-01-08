@@ -53,26 +53,37 @@ app.post("/api/auth/login", (req, res)=>{
 });
 
 app.post("/api/expenses",async (req, res)=>{
-    const {title, amount, groupId,paidBy, splitBetween} = req.body;
+    const {title, amount, groupId,paidBy} = req.body;
 
     if(!title ||
         !amount ||
         !groupId ||
-        !paidBy ||
-        !Array.isArray(splitBetween) ||
-        splitBetween.length===0){
+        !paidBy){
         return res.status(400).json({message: "Invalid expense data"})
     }
 
-    const shareAmount = amount/splitBetween.length;
-
-    const splits = splitBetween.map((userId)=>({
-        userId,
-        share: shareAmount,
-        status: userId == paidBy ? "CONFIRMED" : "UNPAID",
-    }))
+  
 
     try {
+
+        const group = await Group.findById(groupId)
+        if(!group.members.includes(paidBy)){
+            return res.status(400).json({
+                message: "PaidBy user must be a group member"
+            })
+        }
+        if(!group){
+            return res.status(404).json({message:"Group not found"})
+        }
+
+        const shareAmount = amount/group.members.length;
+
+        const splits = group.members.map((userId)=>({
+            userId,
+            share: shareAmount,
+            status: userId == paidBy ? "CONFIRMED" : "UNPAID",
+        }))
+        
         const expense = await Expense.create({
             title, 
             amount, 
@@ -96,9 +107,18 @@ app.post("/api/expenses",async (req, res)=>{
 });
 
 app.get("/api/expenses",async (req, res)=>{
+    const {groupId} = req.query;
+
     try {
-        const expenses = await Expense.find()
+        let expenses
+        
+        if(groupId){
+            expenses = await Expense.find({groupId})
+        } else {
+            expenses = await Expense.find()
+        }
         return res.status(200).json(expenses)
+
     } catch (error) {
         return res.status(500).json({
             message: "Failed to fetch expenses"
@@ -158,7 +178,7 @@ app.delete("/api/expenses/:id", async (req, res)=>{
 
 app.post("/api/groups", async (req, res) =>{
     const {name, members} = req.body;
-    if(!name || !members || members.length < 2){
+    if(!name || !members || members.length === 0){
         return res.status(400).json({message:"Invalid group data"})
     }
     
@@ -279,6 +299,3 @@ app.post("/api/expenses/:expenseId/pay",async (req,res)=>{
         return res.status(500).json({message:"Expense not found"})
     }
 })
-
-
-
