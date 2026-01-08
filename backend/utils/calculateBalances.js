@@ -13,6 +13,7 @@ const calculateBalances = (expenses) =>{
         
 
         if(status === "CONFIRMED") continue;
+        if(userId === paidBy) continue
 
         if(!balances[userId]){
             balances[userId]=0;
@@ -21,6 +22,13 @@ const calculateBalances = (expenses) =>{
         balances[userId]-=share
 
         balances[paidBy]+=share
+
+        // console.log("Paid by:", paidBy)
+        // console.log("splits:", splits.map(s=> s.userId))
+        
+        
+        
+        
     }
 }
 

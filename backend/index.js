@@ -294,7 +294,7 @@ app.post("/api/expenses/:expenseId/pay",async (req,res)=>{
         })
 
 
-    } catch (error) {
+    } catch (error) {B
         console.error(error)
         return res.status(500).json({message:"Expense not found"})
     }
